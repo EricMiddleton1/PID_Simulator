@@ -15,6 +15,8 @@ using namespace std;
 
 #define BAR_LENGTH	200
 
+#define BASE_THRUST	128
+
 int main() {
 	double radius, mass, thrust, dt;
 	
@@ -76,10 +78,8 @@ int main() {
 
 		error = newError;
 
-		rotor.setMotors(-pidOut, pidOut);
+		rotor.setMotors(BASE_THRUST + pidOut, BASE_THRUST - pidOut);
 		rotor.physicsUpdate(dt);
-
-		theta = rotor.getAngle();
 
 		//Create the bar
 		double cx = WIDTH/2., cy = HEIGHT/2.;
@@ -99,7 +99,7 @@ int main() {
 		//Update the window
 		window.display();
 
-		cout << "Angle: " << theta * 180./3.14 << endl;;
+		//cout << "Angle: " << theta * 180./3.14 << endl;;
 
 		sf::sleep(sf::milliseconds(1000. * dt));
 	}
