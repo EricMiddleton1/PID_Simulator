@@ -10,30 +10,29 @@
 
 using namespace std;
 
-#define WIDTH		800
-#define HEIGHT	600
+#define RADIUS	0.5
+#define MASS		0.5
+#define THRUST	10.
+#define GRAVITY	-9.8
+#define TIME_STEP	0.01
 
-#define BAR_LENGTH	200
+#define BOUND_LEFT	-1.5
+#define BOUND_RIGHT	1.5
+#define BOUND_TOP		-1.
+#define BOUND_BOTTOM	1.
+#define ELASTICITY	0.3
 
-#define BASE_THRUST	128
+#define WIDTH		1000
+#define HEIGHT	650
+#define SCALE		300.
+
+#define THRUST_DELTA	100
+#define MAX_ANGLE			(5.*3.14/180.)	
 
 int main() {
-	double radius, mass, thrust, dt;
+	double radius = RADIUS, mass = MASS, thrust = THRUST, dt = TIME_STEP;
 	
 	double kp, ki, kd;
-	double target;
-
-	cout << "Radius=";
-	cin >> radius;
-
-	cout << "Mass=";
-	cin >> mass;
-
-	cout << "Max thrust=";
-	cin >> thrust;
-
-	cout << "Time step=";
-	cin >> dt;
 
 	cout << "Kp=";
 	cin >> kp;
@@ -44,14 +43,11 @@ int main() {
 	cout << "Kd=";
 	cin >> kd;
 
-	cout << "Target Angle=";
-	cin >> target;
+	Rotor rotor(radius, mass, thrust, GRAVITY,
+		BOUND_LEFT, BOUND_RIGHT, BOUND_TOP, BOUND_BOTTOM, ELASTICITY,
+		sf::Color(0, 0, 255));
 
-	target *= 3.14 / 180.;
-
-	Rotor rotor(radius, mass, thrust);
-
-	sf::RenderWindow window(sf::VideoMode(800, 600), "Single Arm PID");
+	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Single Arm PID");
 
 	while(window.isOpen()) {
 		//Check the event loop
@@ -62,6 +58,21 @@ int main() {
 		}
 
 		static double error = 0., i = 0.;
+		static int thrust = 0;
+
+		//Update thrust
+		thrust += (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) - 
+			sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) * THRUST_DELTA * dt;
+
+		if(thrust > 255)
+			thrust = 255;
+		else if(thrust < 0)
+			thrust = 0;
+
+
+		//Update target angle
+		double target = MAX_ANGLE*(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) -
+			sf::Keyboard::isKeyPressed(sf::Keyboard::Right));
 
 		double theta = rotor.getAngle();
 
@@ -69,32 +80,23 @@ int main() {
 
 		i += newError*dt;
 
-		if(i > 1)
-			i = 1;
-		if(i < -1)
-			i = -1;
+		if(i > 10.)
+			i = 10.;
+		if(i < -10.)
+			i = -10.;
 
 		double pidOut = (kp*newError + ki*i + kd*(newError - error)/dt);
 
 		error = newError;
 
-		rotor.setMotors(BASE_THRUST + pidOut, BASE_THRUST - pidOut);
+		rotor.setMotors(thrust + pidOut, thrust - pidOut);
 		rotor.physicsUpdate(dt);
-
-		//Create the bar
-		double cx = WIDTH/2., cy = HEIGHT/2.;
-		sf::Vertex bar[] = {
-			sf::Vertex(sf::Vector2f(cx - BAR_LENGTH*cos(theta),
-				cy + BAR_LENGTH*sin(theta)), sf::Color(0, 0, 255)),
-			sf::Vertex(sf::Vector2f(cx + BAR_LENGTH*cos(theta),
-				cy - BAR_LENGTH*sin(theta)), sf::Color(0, 0, 255))
-		};
 
 		//Clear the screen
 		window.clear(sf::Color::Black);
 
-		//Draw the bar
-		window.draw(bar, 2, sf::Lines);
+		//Draw the rotor
+		rotor.draw(window, WIDTH/2, HEIGHT/2, SCALE);
 
 		//Update the window
 		window.display();
