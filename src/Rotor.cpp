@@ -38,6 +38,14 @@ void Rotor::setMotors(double _left, double _right) {
 	rightMotor = pwmRight * maxThrust / 255.;
 }
 
+uint8_t Rotor::getMotorLeft() const {
+	return leftMotor * 255. / maxThrust;
+}
+
+uint8_t Rotor::getMotorRight() const {
+	return rightMotor * 255. / maxThrust;
+}
+
 void Rotor::physicsUpdate(double dt) {
 	//Update lateral position
 	double xAccel = (leftMotor + rightMotor) * -sin(theta);
@@ -127,6 +135,10 @@ void Rotor::collisionCheck() {
 
 double Rotor::getAngle() const {
 	return theta;
+}
+
+double Rotor::getAngularVelocity() const {
+	return thetaPrime;
 }
 
 void Rotor::draw(sf::RenderWindow& _window, unsigned int _centerX,

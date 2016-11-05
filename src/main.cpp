@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Rotor.hpp"
+#include "Logger.hpp"
 
 using namespace std;
 
@@ -27,7 +28,8 @@ using namespace std;
 #define SCALE		300.
 
 #define THRUST_DELTA	100
-#define MAX_ANGLE			(5.*3.14/180.)	
+#define MAX_ANGLE			(5.*3.14/180.)
+#define PI	3.141592654
 
 int main() {
 	double radius = RADIUS, mass = MASS, thrust = THRUST, dt = TIME_STEP;
@@ -49,6 +51,10 @@ int main() {
 
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Single Arm PID");
 
+	Logger logger({"Angle", "Error", "Integral", "Motor1", "Motor2"},
+		{{-PI/6, PI/6}, {-PI/4, PI/4}, {-0.1, 0.1}, {0, 255}, {0, 255}},
+		500, 400, 100, "Logger");
+
 	while(window.isOpen()) {
 		//Check the event loop
 		sf::Event event;
@@ -56,6 +62,9 @@ int main() {
 			if(event.type == sf::Event::Closed)
 				window.close();
 		}
+
+		//Update logger window
+		logger.updateWindow();
 
 		static double error = 0., i = 0.;
 		static int thrust = 0;
@@ -80,12 +89,12 @@ int main() {
 
 		i += newError*dt;
 
-		if(i > 10.)
-			i = 10.;
-		if(i < -10.)
-			i = -10.;
+		if(i > 0.1)
+			i = 0.1;
+		if(i < -0.1)
+			i = -0.1;
 
-		double pidOut = (kp*newError + ki*i + kd*(newError - error)/dt);
+		double pidOut = (kp*newError + ki*i + kd*rotor.getAngularVelocity());
 
 		error = newError;
 
@@ -100,6 +109,12 @@ int main() {
 
 		//Update the window
 		window.display();
+
+		logger.update("Angle", theta);
+		logger.update("Error", error);
+		logger.update("Integral", i);
+		logger.update("Motor1", rotor.getMotorLeft());
+		logger.update("Motor2", rotor.getMotorRight());
 
 		//cout << "Angle: " << theta * 180./3.14 << endl;;
 

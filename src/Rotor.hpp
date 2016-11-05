@@ -16,9 +16,13 @@ public:
 	void physicsUpdate(double dt);
 
 	double getAngle() const;
+	double getAngularVelocity() const;
 
 	void draw(sf::RenderWindow&, unsigned int centerX, unsigned int centerY,
 		double scale) const;
+
+	uint8_t getMotorLeft() const;
+	uint8_t getMotorRight() const;
 
 private:
 	const double MOTOR_SIZE = 0.05;
