@@ -52,7 +52,7 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Single Arm PID");
 
 	Logger logger({"Angle", "Error", "Integral", "Motor1", "Motor2"},
-		{{-PI/6, PI/6}, {-PI/4, PI/4}, {-0.1, 0.1}, {0, 255}, {0, 255}},
+		{{-PI/12, PI/12}, {-PI/12, PI/12}, {-0.1, 0.1}, {0, 255}, {0, 255}},
 		500, 400, 100, "Logger");
 
 	while(window.isOpen()) {

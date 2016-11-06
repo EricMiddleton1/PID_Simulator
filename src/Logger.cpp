@@ -121,19 +121,26 @@ void Logger::drawEntry(sf::RenderWindow& window, const string& _name,
 	if(_log.values.size() > 1) {
 		//Construct the line
 		vector<sf::Vertex> points;
-		double min = _log.bounds.first, max = _log.bounds.second;
+		double lowerBound = _log.bounds.first, upperBound = _log.bounds.second;
 
 		for(unsigned int i = 0; i < _log.values.size(); ++i) {
 			double val = _log.values[i];
+			sf::Color c;
+			if(val < lowerBound || val > upperBound)
+				c = sf::Color(112, 112, 112);
+			else
+				c = COLORS[_log.height % COLOR_COUNT];
+
+			val = max(lowerBound, min(val, upperBound));
 
 			points.emplace_back(
 				sf::Vector2f(PADDING + i*(width - 2*PADDING)/(maxDatapoints),
-					y + (1. - ((val - min)/(max - min)))*heightPerVar),
-				COLORS[_log.height % COLOR_COUNT]);
+					y + (1. - ((val - lowerBound)/(upperBound - lowerBound)))*heightPerVar),
+				c);
 		}
 
 		//Grid lines
-		for(unsigned int i = 0; i < 4; ++i) {
+		for(unsigned int i = 0; i <= 4; ++i) {
 			unsigned int height = y + i*heightPerVar/4;
 			auto color = sf::Color(112, 112, 112);
 			sf::Vertex line[2] = {
